@@ -6,15 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		BB000000000000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA000000000000000000000A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA0000000000000000000006;
+			remoteInfo = PiVisualizer;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		BB0000000000000000000001 /* PiVisualizerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PiVisualizerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000001 /* PiVisualizer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PiVisualizer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		BB0000000000000000000002 /* PiVisualizerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = PiVisualizerTests; sourceTree = "<group>"; };
 		AA0000000000000000000002 /* PiVisualizer */ = {isa = PBXFileSystemSynchronizedRootGroup; path = PiVisualizer; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		BB0000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000003 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -29,6 +48,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000002 /* PiVisualizer */,
+				BB0000000000000000000002 /* PiVisualizerTests */,
 				AA0000000000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -37,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000001 /* PiVisualizer.app */,
+				BB0000000000000000000001 /* PiVisualizerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -44,6 +65,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		BB0000000000000000000006 /* PiVisualizerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB0000000000000000000007 /* Build configuration list for PBXNativeTarget "PiVisualizerTests" */;
+			buildPhases = (
+				BB0000000000000000000008 /* Sources */,
+				BB0000000000000000000003 /* Frameworks */,
+				BB0000000000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BB000000000000000000000B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BB0000000000000000000002 /* PiVisualizerTests */,
+			);
+			name = PiVisualizerTests;
+			packageProductDependencies = (
+			);
+			productName = PiVisualizerTests;
+			productReference = BB0000000000000000000001 /* PiVisualizerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		AA0000000000000000000006 /* PiVisualizer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA0000000000000000000007 /* Build configuration list for PBXNativeTarget "PiVisualizer" */;
@@ -79,6 +123,10 @@
 					AA0000000000000000000006 = {
 						CreatedOnToolsVersion = 27.0;
 					};
+					BB0000000000000000000006 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = AA0000000000000000000006;
+					};
 				};
 			};
 			buildConfigurationList = AA000000000000000000000B /* Build configuration list for PBXProject "PiVisualizer" */;
@@ -96,11 +144,19 @@
 			projectRoot = "";
 			targets = (
 				AA0000000000000000000006 /* PiVisualizer */,
+				BB0000000000000000000006 /* PiVisualizerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		BB0000000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000009 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -111,6 +167,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		BB0000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AA0000000000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -120,7 +183,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		BB000000000000000000000B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA0000000000000000000006 /* PiVisualizer */;
+			targetProxy = BB000000000000000000000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		BB000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZH3UJV5QB4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmadalaishat.PiVisualizerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PiVisualizer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PiVisualizer";
+			};
+			name = Debug;
+		};
+		BB000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZH3UJV5QB4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmadalaishat.PiVisualizerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PiVisualizer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PiVisualizer";
+			};
+			name = Release;
+		};
 		AA000000000000000000000C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -224,6 +331,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		BB0000000000000000000007 /* Build configuration list for PBXNativeTarget "PiVisualizerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB000000000000000000000C /* Debug */,
+				BB000000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		AA0000000000000000000007 /* Build configuration list for PBXNativeTarget "PiVisualizer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
