@@ -90,7 +90,6 @@ struct OptionsSheet<ModeOptions: View>: View {
     /// Renders the current visualization as a wallpaper.
     let makeWallpaper: () -> Void
     @ViewBuilder let modeOptions: () -> ModeOptions
-    @Environment(FindInPi.self) private var find
     @Environment(\.dismiss) private var dismiss
     @State private var showingInfo = false
 
@@ -116,13 +115,6 @@ struct OptionsSheet<ModeOptions: View>: View {
                     }
                 }
                 Section("Explore") {
-                    Button {
-                        dismiss()
-                        // Let this sheet finish closing before the search sheet opens.
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { find.isOpen = true }
-                    } label: {
-                        Label("Find a number in π", systemImage: "magnifyingglass")
-                    }
                     Button { showingInfo = true } label: { Label(topic.title, systemImage: "info.circle") }
                 }
             }

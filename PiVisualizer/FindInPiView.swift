@@ -5,6 +5,8 @@ import SwiftUI
 struct FindInPiView: View {
     /// Called with the digit count to walk to, when the match is within the 3D walk's reach.
     let onWalk: (Int) -> Void
+    /// Called with the match's decimal position and length, to show it in Chords.
+    let onChords: (Int, Int) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var query = ""
     @State private var result: SearchResult?
@@ -101,15 +103,25 @@ struct FindInPiView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                if position + best.digits.count - 1 <= WalkModel.countOptions.max()! {
-                    Button {
-                        onWalk(position + best.digits.count)
-                        dismiss()
-                    } label: {
-                        Label("Walk to it in 3D", systemImage: "figure.walk.motion")
+                // The visual modes reach the first 1,000,000 digits.
+                if position + best.digits.count - 1 < PiDigits.all.count {
+                    HStack(spacing: 10) {
+                        Button {
+                            onChords(position, best.digits.count)
+                            dismiss()
+                        } label: {
+                            Label("Show in Chords", systemImage: "circle.hexagongrid").frame(maxWidth: .infinity)
+                        }
+                        Button {
+                            onWalk(position + best.digits.count)
+                            dismiss()
+                        } label: {
+                            Label("Walk to it", systemImage: "figure.walk.motion").frame(maxWidth: .infinity)
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.purple)
+                    .controlSize(.large)
                 }
                 otherForms(result, excluding: best)
             }

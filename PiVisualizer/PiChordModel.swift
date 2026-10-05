@@ -20,6 +20,11 @@ final class PiChordModel {
     /// Chords handed to the background bake but not yet in `baked`; still drawn live meanwhile.
     private(set) var pendingPaths = Array(repeating: Path(), count: 10)
     private(set) var completed = 0
+    /// A number found by the search, shown in the diagram: indices into `digits` (index p is the
+    /// p-th decimal, since index 0 is the integer digit).
+    private(set) var highlight: Range<Int>?
+    /// True while a jump to a found number is still being drawn in the background.
+    private(set) var fillingIn = false
 
     /// Older chords rasterised into a bitmap covering the unit square [-1, 1]. In runs of 10,000
     /// digits or more, every `bakeThreshold` chords the vector paths are flattened into it so each
@@ -96,6 +101,52 @@ final class PiChordModel {
         baked = BakedImages()
         bakedCount = 0
         bakeInFlight = false
+        highlight = nil
+        fillingIn = false
+    }
+
+    /// Shows a number found at decimal `position` (1-based, `length` digits) without replaying:
+    /// every chord up to it is drawn at once, its own chords are highlighted, and play pauses there.
+    func jump(toMatchAt position: Int, length: Int) {
+        isPlaying = false
+        if constant != .pi { setConstant(.pi) }
+        let last = position + length - 1
+        let count = Self.countOptions.first { $0 > last } ?? Self.countOptions.last!
+        if count != digitCount { setDigitCount(count) } else { restart() }
+        drawInstantly(upTo: last)
+        highlight = position..<(position + length)
+    }
+
+    /// Draws chords 0..<target in one go and stands the diagram on digit `target`.
+    private func drawInstantly(upTo target: Int) {
+        position = Double(target)
+        completed = target
+        guard digitCount >= 10_000 else {
+            // Short runs stay vector: a few hundred paths, drawn immediately.
+            for i in 0..<target { chordPaths[Int(digits[i])].addPath(chord(i)) }
+            return
+        }
+        // Long runs bake in the background in batches, each showing as it lands, so the diagram
+        // visibly fills in rather than waiting on one huge render.
+        bakedCount = target
+        bakeInFlight = true
+        fillingIn = true
+        let batch = 25_000
+        for start in stride(from: 0, to: target, by: batch) {
+            let end = min(start + batch, target)
+            layers.draw(strokes(for: start..<end)) { [weak self] images in
+                guard let self else { return }
+                baked = images
+                if end == target {
+                    bakeInFlight = false
+                    fillingIn = false
+                }
+            }
+        }
+        if target == 0 {
+            bakeInFlight = false
+            fillingIn = false
+        }
     }
 
     func togglePlay() {
@@ -173,7 +224,7 @@ final class PiChordModel {
         }
     }
 
-    private func chord(_ i: Int) -> Path {
+    func chord(_ i: Int) -> Path {
         let span = Double(chordTotal)
         return ChordLayout.chord(from: Int(digits[i]), at: Double(i) / span,
                                  to: Int(digits[i + 1]), at: Double(i + 1) / span)

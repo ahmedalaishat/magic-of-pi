@@ -17,7 +17,11 @@ struct ChordModeView: View {
             .accessibilityValue("\((model.completed + 1).formatted()) of \(model.digitCount.formatted()) digits drawn")
             .accessibilityHint("Each pair of neighbouring digits draws a chord between them.")
             .overlay(alignment: .topLeading) {
-                CounterBadge { "\((model.completed + 1).formatted()) / \(model.digitCount.formatted()) digits" }
+                CounterBadge {
+                    if model.fillingIn { return "Drawing \(model.completed.formatted()) chords…" }
+                    if let highlight = model.highlight { return "Your number at digit \(highlight.lowerBound.formatted())" }
+                    return "\((model.completed + 1).formatted()) / \(model.digitCount.formatted()) digits"
+                }
             }
             DigitStrip(model: model).infoCard()
             ControlBar(isPlaying: model.isPlaying, onRestart: model.restart,
@@ -63,6 +67,10 @@ struct ChordDiagram: View {
         let baked = model.baked
         let live = model.liveChord
         let style = model.chordStyle
+        // The found number's own chords, drawn bright on top.
+        let highlighted: [Path] = model.highlight.map { range in
+            (range.lowerBound..<(range.upperBound - 1)).map(model.chord)
+        } ?? []
 
         GeometryReader { geometry in
             let size = geometry.size
@@ -85,6 +93,12 @@ struct ChordDiagram: View {
                     if let live {
                         chords.stroke(live.path.trimmedPath(from: 0, to: live.progress),
                                       with: .color(.white), lineWidth: 2 / scale)
+                    }
+                    for chord in highlighted {
+                        var glow = unit
+                        glow.addFilter(.blur(radius: 4))
+                        glow.stroke(chord, with: .color(.white.opacity(0.8)), lineWidth: 6 / scale)
+                        unit.stroke(chord, with: .color(.white), lineWidth: 2.5 / scale)
                     }
 
                     for digit in 0..<10 {
@@ -127,7 +141,11 @@ struct DigitStrip: View {
         for i in start...end {
             let digit = Int(model.digits[i])
             var piece = AttributedString("\(digit)\(i == 0 ? "." : "")")
-            if i == end {
+            if model.highlight?.contains(i) == true {
+                // The found number, in pink.
+                piece.foregroundColor = Color(red: 0.96, green: 0.45, blue: 0.71)
+                piece.font = .system(size: 24, weight: .bold, design: .monospaced)
+            } else if i == end {
                 piece.foregroundColor = ChordLayout.color(digit)
                 piece.font = .system(size: 26, weight: .bold, design: .monospaced)
             } else {

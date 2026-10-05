@@ -5,9 +5,9 @@ struct WelcomeCard: View {
     let onDone: () -> Void
 
     private let tips: [(icon: String, text: String)] = [
-        ("square.grid.2x2", "Pick a visualization on the home screen."),
+        ("square.grid.2x2", "Pick a visualization on the home screen, or find your birthday in π."),
         ("play.circle.fill", "Play and pause anytime. In Chords, tap the circle to draw one digit at a time."),
-        ("slider.horizontal.3", "Options: digits, speed, sound, and Find your birthday in π."),
+        ("slider.horizontal.3", "Options: digits, speed, sound, wallpaper, and why it works."),
         ("video", "Camera moves in the 3D modes."),
         ("scope", "Rods with Spotlight zoom into π's near-misses: 22/7 and 355/113."),
     ]

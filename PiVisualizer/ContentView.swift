@@ -57,10 +57,13 @@ struct ContentView: View {
             Text(recorder.failure ?? "")
         }
         .sheet(isPresented: $find.isOpen) {
-            FindInPiView { steps in
+            FindInPiView(onWalk: { steps in
                 path = [.walk]
                 walk.jump(to: steps)
-            }
+            }, onChords: { position, length in
+                path = [.chords]
+                chords.jump(toMatchAt: position, length: length)
+            })
         }
         // Only the visible mode animates; the others keep their drawings but stop.
         .onChange(of: path) {
