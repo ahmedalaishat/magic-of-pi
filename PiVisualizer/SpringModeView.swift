@@ -5,6 +5,7 @@ import SceneKit
 struct SpringModeView: View {
     @Bindable var model: SpringModel
     @State private var showingOptions = false
+    @State private var showingAR = false
 
     static let shots: [CameraShot] = [.overview, .orbit, .topDown]
 
@@ -24,6 +25,7 @@ struct SpringModeView: View {
         .task(id: model.isPlaying) {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
+        .fullScreenCover(isPresented: $showingAR) { ARExperienceView(shape: arShape) }
         .sheet(isPresented: $showingOptions) {
             OptionsSheet(topic: .spring, speed: $model.speed, speedRange: 0.05...20, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
@@ -33,8 +35,21 @@ struct SpringModeView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                Section {
+                    Button {
+                        showingOptions = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showingAR = true }
+                    } label: {
+                        Label("View in AR", systemImage: "arkit")
+                    }
+                }
             }
         }
+    }
+
+    /// The whole spring, in its own colours, for AR.
+    private var arShape: ARShape {
+        ARShape(points: model.path.points, colors: model.path.colors.map { SIMD4($0.x, $0.y, $0.z, 1) }, size: 0.4)
     }
 
     private var scene: some View {

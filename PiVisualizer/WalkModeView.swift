@@ -5,6 +5,7 @@ import SceneKit
 struct WalkModeView: View {
     @Bindable var model: WalkModel
     @State private var showingOptions = false
+    @State private var showingAR = false
 
     var body: some View {
         VStack(spacing: 14) {
@@ -21,6 +22,7 @@ struct WalkModeView: View {
         .task(id: model.isPlaying) {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
+        .fullScreenCover(isPresented: $showingAR) { ARExperienceView(shape: arShape) }
         .sheet(isPresented: $showingOptions) {
             OptionsSheet(topic: .walk, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
@@ -32,8 +34,22 @@ struct WalkModeView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+                Section {
+                    Button {
+                        showingOptions = false
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { showingAR = true }
+                    } label: {
+                        Label("View in AR", systemImage: "arkit")
+                    }
+                }
             }
         }
+    }
+
+    /// The walk so far (at least 1,000 steps, so there is something to place), for AR.
+    private var arShape: ARShape {
+        let points = Array(model.path.points.prefix(max(model.steps, min(1_000, model.digitCount)) + 1))
+        return ARShape(points: points, colors: ARShape.gradient(count: points.count), size: 0.5)
     }
 
     private var scene: some View {
