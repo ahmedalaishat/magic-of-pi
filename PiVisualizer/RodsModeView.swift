@@ -18,7 +18,7 @@ struct RodsModeView: View {
             .accessibilityValue(headerDetail)
             .overlay(alignment: .topLeading) { CounterBadge { headerDetail } }
             RodsReadout(model: model, onEditFormula: { editingFormula = true }).infoCard()
-            ControlBar(isPlaying: model.isPlaying, onRestart: model.restart,
+            ControlBar(topic: .rods, isPlaying: model.isPlaying, onRestart: model.restart,
                        onTogglePlay: model.togglePlay, onOptions: { showingOptions = true })
         }
         .task(id: model.isPlaying) {
@@ -29,7 +29,7 @@ struct RodsModeView: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .rods, speed: $model.speed, speedRange: 0.01...20, hapticsOn: $model.hapticsOn,
+            OptionsSheet(speed: $model.speed, speedRange: 0.01...20, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.render(RodsDiagram(model: model, zoom: 1)) }) {
                 RodsOptions(model: model)
             }
@@ -238,9 +238,7 @@ struct RodsReadout: View {
                         Image(systemName: "slider.horizontal.3")
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .overlay(Rectangle().stroke(.white.opacity(0.8), lineWidth: 1))
+
                 }
                 .foregroundStyle(.white)
             }

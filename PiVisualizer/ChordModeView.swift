@@ -24,14 +24,14 @@ struct ChordModeView: View {
                 }
             }
             DigitStrip(model: model).infoCard()
-            ControlBar(isPlaying: model.isPlaying, onRestart: model.restart,
+            ControlBar(topic: .chords, isPlaying: model.isPlaying, onRestart: model.restart,
                        onTogglePlay: model.togglePlay, onOptions: { showingOptions = true })
         }
         .task(id: model.isPlaying) {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .chords, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
+            OptionsSheet(speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.render(ChordDiagram(model: model, zoom: 1)) }) {
                 Section {
                     Picker("Number", selection: Binding(get: { model.constant }, set: { model.setConstant($0) })) {

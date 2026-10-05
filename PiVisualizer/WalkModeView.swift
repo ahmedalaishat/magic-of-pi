@@ -20,7 +20,7 @@ struct WalkModeView: View {
                 .overlay(alignment: .topLeading) {
                     CounterBadge { "\(model.steps.formatted()) / \(model.digitCount.formatted()) digits" }
                 }
-            ControlBar(isPlaying: model.isPlaying, onRestart: model.restart, onTogglePlay: model.togglePlay,
+            ControlBar(topic: .walk, isPlaying: model.isPlaying, onRestart: model.restart, onTogglePlay: model.togglePlay,
                        onOptions: { showingOptions = true }, shots: CameraShot.allCases, onShot: model.play)
         }
         .task(id: model.isPlaying) {
@@ -28,7 +28,7 @@ struct WalkModeView: View {
         }
         .fullScreenCover(isPresented: $showingAR) { ARExperienceView(shape: arShape) }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .walk, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
+            OptionsSheet(speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
                 Section {
                     Picker("Number", selection: Binding(get: { model.constant }, set: { model.setConstant($0) })) {

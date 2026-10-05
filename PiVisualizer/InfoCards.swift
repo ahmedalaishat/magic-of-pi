@@ -13,6 +13,16 @@ enum ModeTopic {
         }
     }
 
+    /// The question under the play button that opens this explanation.
+    var question: String {
+        switch self {
+        case .chords: "Why does it look random?"
+        case .rods: "Why don't the rods ever close?"
+        case .walk: "Why does it wander like this?"
+        case .spring: "Why do the white loops line up?"
+        }
+    }
+
     var sections: [(icon: String, heading: String, text: String)] {
         switch self {
         case .chords:

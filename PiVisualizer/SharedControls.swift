@@ -32,14 +32,17 @@ struct SpeedSlider: View {
 
 /// The only controls kept on screen: restart, play/pause, options, and camera moves in 3D.
 struct ControlBar: View {
+    let topic: ModeTopic
     let isPlaying: Bool
     let onRestart: () -> Void
     let onTogglePlay: () -> Void
     let onOptions: () -> Void
     var shots: [CameraShot] = []
     var onShot: (CameraShot) -> Void = { _ in }
+    @State private var showingInfo = false
 
     var body: some View {
+        VStack(spacing: 6) {
         HStack {
             HStack(spacing: 24) {
                 Button(action: onRestart) { Image(systemName: "arrow.counterclockwise") }
@@ -60,6 +63,16 @@ struct ControlBar: View {
         .font(.title2)
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
+            // The mode's explanation, one tap away.
+            Button { showingInfo = true } label: {
+                Label(topic.question, systemImage: "info.circle")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .sheet(isPresented: $showingInfo) {
+            InfoSheet(topic: topic).presentationDetents([.medium, .large])
+        }
     }
 }
 
@@ -81,9 +94,8 @@ struct CameraMenu: View {
 }
 
 /// Settings for a mode, in a half-height sheet that leaves the visualization visible and live
-/// above it. Each mode adds its own sections; playback and explore sections are shared.
+/// above it. Each mode adds its own sections; playback and share sections are shared.
 struct OptionsSheet<ModeOptions: View>: View {
-    let topic: ModeTopic
     @Binding var speed: Double
     let speedRange: ClosedRange<Double>
     @Binding var hapticsOn: Bool
@@ -91,7 +103,6 @@ struct OptionsSheet<ModeOptions: View>: View {
     let makeWallpaper: () -> Void
     @ViewBuilder let modeOptions: () -> ModeOptions
     @Environment(\.dismiss) private var dismiss
-    @State private var showingInfo = false
 
     var body: some View {
         NavigationStack {
@@ -114,9 +125,6 @@ struct OptionsSheet<ModeOptions: View>: View {
                         Label("Save as wallpaper", systemImage: "photo")
                     }
                 }
-                Section("Explore") {
-                    Button { showingInfo = true } label: { Label(topic.title, systemImage: "info.circle") }
-                }
             }
             .navigationTitle("Options")
             .navigationBarTitleDisplayMode(.inline)
@@ -126,9 +134,6 @@ struct OptionsSheet<ModeOptions: View>: View {
         }
         .presentationDetents([.fraction(0.45), .large])
         .presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.45)))
-        .sheet(isPresented: $showingInfo) {
-            InfoSheet(topic: topic).presentationDetents([.medium, .large])
-        }
     }
 }
 

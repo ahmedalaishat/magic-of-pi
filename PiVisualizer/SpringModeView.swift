@@ -23,7 +23,7 @@ struct SpringModeView: View {
                     CounterBadge { String(format: "%.2f / %d turns", model.position, model.turnCount) }
                 }
             SpringReadout(model: model).infoCard()
-            ControlBar(isPlaying: model.isPlaying, onRestart: model.restart, onTogglePlay: model.togglePlay,
+            ControlBar(topic: .spring, isPlaying: model.isPlaying, onRestart: model.restart, onTogglePlay: model.togglePlay,
                        onOptions: { showingOptions = true }, shots: Self.shots, onShot: model.play)
         }
         .task(id: model.isPlaying) {
@@ -31,7 +31,7 @@ struct SpringModeView: View {
         }
         .fullScreenCover(isPresented: $showingAR) { ARExperienceView(shape: arShape) }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .spring, speed: $model.speed, speedRange: 0.05...20, hapticsOn: $model.hapticsOn,
+            OptionsSheet(speed: $model.speed, speedRange: 0.05...20, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
                 Section("Turns") {
                     Picker("Turns", selection: Binding(get: { model.turnCount }, set: { model.setTurnCount($0) })) {
