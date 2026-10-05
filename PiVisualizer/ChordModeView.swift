@@ -12,6 +12,10 @@ struct ChordModeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .recordingArea(square: true)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Chord diagram of \(model.constant.rawValue)'s digits")
+            .accessibilityValue("\((model.completed + 1).formatted()) of \(model.digitCount.formatted()) digits drawn")
+            .accessibilityHint("Each pair of neighbouring digits draws a chord between them.")
             .overlay(alignment: .topLeading) {
                 CounterBadge { "\((model.completed + 1).formatted()) / \(model.digitCount.formatted()) digits" }
             }
@@ -25,7 +29,17 @@ struct ChordModeView: View {
         .sheet(isPresented: $showingOptions) {
             OptionsSheet(topic: .chords, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.render(ChordDiagram(model: model, zoom: 1)) }) {
-                Section("Digits of π") {
+                Section {
+                    Picker("Number", selection: Binding(get: { model.constant }, set: { model.setConstant($0) })) {
+                        ForEach(Constant.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Number")
+                } footer: {
+                    Text("Compare π with e, √2 and the golden ratio φ. Digit by digit all four look equally random; the magic of π is in its geometry.")
+                }
+                Section("Digits") {
                     Picker("Digits", selection: Binding(get: { model.digitCount }, set: { model.setDigitCount($0) })) {
                         ForEach(PiChordModel.countOptions, id: \.self) {
                             Text($0.formatted(.number.notation(.compactName))).tag($0)

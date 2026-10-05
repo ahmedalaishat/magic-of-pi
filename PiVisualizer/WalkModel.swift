@@ -18,11 +18,11 @@ struct WalkPath {
     let lower: [SIMD3<Float>]
     let upper: [SIMD3<Float>]
 
-    init(steps: Int) {
+    init(steps: Int, digits: [UInt8]) {
         var points = [SIMD3<Float>.zero]
         var lower = [SIMD3<Float>.zero], upper = [SIMD3<Float>.zero]
         points.reserveCapacity(steps + 1)
-        for digit in PiDigits.all.prefix(steps) {
+        for digit in digits.prefix(steps) {
             let next = points[points.count - 1] + Self.directions[Int(digit)]
             points.append(next)
             lower.append(simd_min(lower[lower.count - 1], next))
@@ -88,18 +88,31 @@ final class WalkModel {
 
     var steps: Int { Int(position) }
     var isFinished: Bool { steps >= digitCount }
-    var currentDigit: Int { Int(PiDigits.all[max(steps - 1, 0)]) }
+    /// Whose digits steer the walk: π, or e, √2 or φ for comparison.
+    private(set) var constant = Constant(rawValue: Stored.value("walk.constant", default: Constant.pi.rawValue)) ?? .pi
+    @ObservationIgnored private var digits = PiDigits.all
 
     init() {
         let count = Stored.choice("walk.digits", among: Self.countOptions, default: 10_000)
         digitCount = count
-        path = WalkPath(steps: count)
+        // Read the stored number into a local: properties can't be read until all are set.
+        let chosen = Constant(rawValue: Stored.value("walk.constant", default: Constant.pi.rawValue)) ?? .pi
+        digits = chosen.digits
+        path = WalkPath(steps: count, digits: chosen.digits)
+    }
+
+    func setConstant(_ newConstant: Constant) {
+        constant = newConstant
+        digits = newConstant.digits
+        Stored.set(newConstant.rawValue, "walk.constant")
+        path = WalkPath(steps: digitCount, digits: digits)
+        restart()
     }
 
     func setDigitCount(_ count: Int) {
         digitCount = count
         Stored.set(count, "walk.digits")
-        path = WalkPath(steps: count)
+        path = WalkPath(steps: count, digits: digits)
         restart()
     }
 
@@ -129,8 +142,8 @@ final class WalkModel {
         let before = steps
         position = min(position + speed * seconds, Double(digitCount))
         if steps > before {
-            if hapticsOn { haptics.play(digit: PiDigits.all[steps - 1]) }
-            PiMusic.shared.play(digit: PiDigits.all[steps - 1])
+            if hapticsOn { haptics.play(digit: digits[steps - 1]) }
+            PiMusic.shared.play(digit: digits[steps - 1])
         }
         if isFinished { isPlaying = false }
     }

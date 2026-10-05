@@ -25,15 +25,23 @@ enum PiDigits {
         return String(extended[start..<end].map { Character(String($0)) })
     }
 
-    private static let packed: Data = {
-        guard let url = Bundle.main.url(forResource: "pi-digits", withExtension: "bin"),
+    private static let packed = load("pi-digits")
+
+    /// A bundled .bin of packed digits.
+    static func load(_ name: String) -> Data {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "bin"),
               let data = try? Data(contentsOf: url) else {
-            fatalError("pi-digits.bin is missing from the app bundle")
+            fatalError("\(name).bin is missing from the app bundle")
         }
         return data
-    }()
+    }
 
     private static func unpack(limit: Int) -> [UInt8] {
+        unpack(packed, limit: limit)
+    }
+
+    /// Two digits per byte, high nibble first; a trailing 0xF nibble is padding.
+    static func unpack(_ packed: Data, limit: Int) -> [UInt8] {
         var total = packed.count * 2
         if packed.last.map({ $0 & 0x0F == 0x0F }) == true { total -= 1 }
         let count = min(total, limit)
@@ -49,4 +57,28 @@ enum PiDigits {
         }
         return digits
     }
+}
+
+/// The numbers whose digits the Chords and 3D Walk can draw, to compare π with others.
+enum Constant: String, CaseIterable, Identifiable {
+    case pi = "π"
+    case e = "e"
+    case sqrt2 = "√2"
+    case phi = "φ"
+
+    var id: Self { self }
+
+    /// The integer digit followed by 1,000,000 decimals.
+    var digits: [UInt8] {
+        switch self {
+        case .pi: PiDigits.all
+        case .e: Self.eDigits
+        case .sqrt2: Self.sqrt2Digits
+        case .phi: Self.phiDigits
+        }
+    }
+
+    private static let eDigits = PiDigits.unpack(PiDigits.load("e-digits"), limit: 1_000_001)
+    private static let sqrt2Digits = PiDigits.unpack(PiDigits.load("sqrt2-digits"), limit: 1_000_001)
+    private static let phiDigits = PiDigits.unpack(PiDigits.load("phi-digits"), limit: 1_000_001)
 }

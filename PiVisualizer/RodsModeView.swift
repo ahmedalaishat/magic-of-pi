@@ -13,6 +13,9 @@ struct RodsModeView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .recordingArea(square: true)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Rotating rods, style \(model.style.rawValue)")
+            .accessibilityValue(headerDetail)
             .overlay(alignment: .topLeading) { CounterBadge { headerDetail } }
             RodsReadout(model: model, onEditFormula: { editingFormula = true }).infoCard()
             ControlBar(isPlaying: model.isPlaying, onRestart: model.restart,

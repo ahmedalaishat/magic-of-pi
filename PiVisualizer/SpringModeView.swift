@@ -15,6 +15,10 @@ struct SpringModeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .frame(maxHeight: .infinity)
                 .recordingArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("3D spring of the rods' turns")
+                .accessibilityValue(String(format: "%.0f of %d turns", model.position, model.turnCount))
+                .accessibilityHint("Drag to orbit, pinch to zoom.")
                 .overlay(alignment: .topLeading) {
                     CounterBadge { String(format: "%.2f / %d turns", model.position, model.turnCount) }
                 }
@@ -135,6 +139,7 @@ final class SpringScene: NSObject, SCNSceneRendererDelegate {
     private struct Controls {
         var position: Double = 0
         var isPlaying = false
+        var reduceMotion = false
         var yawOffset: Float = 0
         var pitchOffset: Float = 0
         var zoom: Float = 1
@@ -240,6 +245,7 @@ final class SpringScene: NSObject, SCNSceneRendererDelegate {
         lock.withLock {
             controls.position = position
             controls.isPlaying = isPlaying
+            controls.reduceMotion = UIAccessibility.isReduceMotionEnabled
             controls.shot = shot
         }
     }
@@ -297,7 +303,8 @@ final class SpringScene: NSObject, SCNSceneRendererDelegate {
         } else {
             Motion.spring(&focusHeight, &focusVelocity, to: pen.y, omega: 3, dt: dt)
         }
-        yaw += dt * (c.isPlaying ? 0.18 : 0.1)
+        // With Reduce Motion the camera only moves when the viewer moves it.
+        if !c.reduceMotion { yaw += dt * (c.isPlaying ? 0.18 : 0.1) }
         let axis = SIMD3<Float>(0, focusHeight, 0)
         var target = axis
         var fieldOfView = Self.fieldOfView

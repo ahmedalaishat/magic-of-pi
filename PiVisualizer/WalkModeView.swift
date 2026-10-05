@@ -13,6 +13,10 @@ struct WalkModeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .frame(maxHeight: .infinity)
                 .recordingArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("3D walk through \(model.constant.rawValue)'s digits")
+                .accessibilityValue("\(model.steps.formatted()) of \(model.digitCount.formatted()) steps")
+                .accessibilityHint("Drag to orbit, pinch to zoom.")
                 .overlay(alignment: .topLeading) {
                     CounterBadge { "\(model.steps.formatted()) / \(model.digitCount.formatted()) digits" }
                 }
@@ -26,7 +30,17 @@ struct WalkModeView: View {
         .sheet(isPresented: $showingOptions) {
             OptionsSheet(topic: .walk, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
                          makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
-                Section("Digits of π") {
+                Section {
+                    Picker("Number", selection: Binding(get: { model.constant }, set: { model.setConstant($0) })) {
+                        ForEach(Constant.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("Number")
+                } footer: {
+                    Text("Compare π with e, √2 and the golden ratio φ. Digit by digit all four look equally random; the magic of π is in its geometry.")
+                }
+                Section("Digits") {
                     Picker("Digits", selection: Binding(get: { model.digitCount }, set: { model.setDigitCount($0) })) {
                         ForEach(WalkModel.countOptions, id: \.self) {
                             Text($0.formatted(.number.notation(.compactName))).tag($0)
@@ -54,8 +68,8 @@ struct WalkModeView: View {
 
     private var scene: some View {
         WalkSceneHost(model: model)
-            // A new digit count is a new walk, so rebuild the scene rather than patch it.
-            .id(model.digitCount)
+            // A new digit count or number is a new walk, so rebuild the scene rather than patch it.
+            .id("\(model.digitCount)\(model.constant.rawValue)")
     }
 }
 
@@ -124,6 +138,7 @@ final class WalkScene: NSObject, SCNSceneRendererDelegate {
         var position: Double = 0
         var speed: Double = 300
         var isPlaying = false
+        var reduceMotion = false
         var yawOffset: Float = 0
         var pitchOffset: Float = 0
         var zoom: Float = 1
@@ -221,6 +236,7 @@ final class WalkScene: NSObject, SCNSceneRendererDelegate {
             controls.position = position
             controls.speed = speed
             controls.isPlaying = isPlaying
+            controls.reduceMotion = UIAccessibility.isReduceMotionEnabled
             controls.shot = shot
         }
     }
@@ -313,7 +329,8 @@ final class WalkScene: NSObject, SCNSceneRendererDelegate {
             Motion.spring(&distance, &distanceVelocity, to: targetDistance, omega: 1.5, dt: dt)
             Motion.spring(&heading, &headingVelocity, to: targetHeading, omega: 0.9, dt: dt)
         }
-        if !c.isPlaying { circling += dt * 0.15 }
+        // With Reduce Motion the camera only moves when the viewer moves it.
+        if !c.isPlaying, !c.reduceMotion { circling += dt * 0.15 }
 
         let flat = simd_length(heading) > 0.01 ? simd_normalize(heading) : SIMD3<Float>(0, 0, 1)
         let turn = simd_quatf(angle: c.yawOffset + circling, axis: SIMD3(0, 1, 0))

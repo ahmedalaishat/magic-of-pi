@@ -37,7 +37,10 @@ final class PiChordModel {
     private static let maxLiveChords = 4_000
     private static let bakeThreshold = 500
 
-    let digits = PiDigits.all
+    /// Whose digits are drawn: π, or e, √2 or φ for comparison.
+    private(set) var constant = Constant(rawValue: Stored.value("chords.constant", default: Constant.pi.rawValue)) ?? .pi
+    /// The chosen number's digits; read in tight loops, so not observed (`constant` is).
+    @ObservationIgnored private(set) var digits = PiDigits.all
     @ObservationIgnored private let haptics = DigitHaptics()
 
     var chordTotal: Int { digitCount - 1 }
@@ -65,7 +68,15 @@ final class PiChordModel {
     }
 
     init() {
+        digits = constant.digits
         // A remembered million-digit run needs the high-precision bitmaps from the start.
+        restart()
+    }
+
+    func setConstant(_ newConstant: Constant) {
+        constant = newConstant
+        digits = newConstant.digits
+        Stored.set(newConstant.rawValue, "chords.constant")
         restart()
     }
 
