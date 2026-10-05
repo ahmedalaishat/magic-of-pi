@@ -8,10 +8,6 @@ struct SplashView: View {
     @State private var start = Date()
     @State private var finished = false
 
-    private static let rods = Array(PiOutline.terms.prefix(60))
-    private static let sampleCount = 720
-    /// The pen's path over one turn, in unit coordinates (y down, so π stands upright).
-    private static let trail: [CGPoint] = (0...sampleCount).map { pen(at: 2 * .pi * Double($0) / Double(sampleCount)) }
     private static let digits = "3.14159 26535 89793 23846 26433"
 
     // Timeline, in seconds.
@@ -71,10 +67,10 @@ struct SplashView: View {
             CGPoint(x: size.width / 2 + p.x * scale, y: size.height / 2 + p.y * scale)
         }
 
-        let drawn = Int(progress * Double(Self.sampleCount))
+        let drawn = Int(progress * Double(PiGlyph.sampleCount))
         if drawn > 0 {
             var path = Path()
-            path.addLines(Self.trail[0...drawn].map(screen))
+            path.addLines(PiGlyph.trail[0...drawn].map(screen))
             let colors = Gradient(colors: (0...6).map { Color(hue: 0.55 + 0.45 * Double($0) / 6, saturation: 0.7, brightness: 1) })
             let shading = GraphicsContext.Shading.linearGradient(colors, startPoint: .zero,
                                                                   endPoint: CGPoint(x: size.width, y: size.height))
@@ -94,7 +90,7 @@ struct SplashView: View {
         var joint = CGPoint.zero
         var chain = Path()
         chain.move(to: screen(joint))
-        for rod in Self.rods {
+        for rod in PiGlyph.rods {
             let angle = rod.speed * theta + rod.phase
             let next = CGPoint(x: joint.x + rod.length * cos(angle), y: joint.y - rod.length * sin(angle))
             let r = rod.length * scale
@@ -113,7 +109,20 @@ struct SplashView: View {
                      with: .color(.white.opacity(rodOpacity)))
     }
 
-    private static func pen(at theta: Double) -> CGPoint {
+    private static func ease(_ x: Double) -> Double {
+        let t = min(max(x, 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+}
+
+/// The π glyph drawn by its 60 largest Fourier circles: shared by the splash and the home screen.
+enum PiGlyph {
+    static let rods = Array(PiOutline.terms.prefix(60))
+    static let sampleCount = 720
+    /// The pen's path over one turn, in unit coordinates (y down, so π stands upright).
+    static let trail: [CGPoint] = (0...sampleCount).map { pen(at: 2 * .pi * Double($0) / Double(sampleCount)) }
+
+    static func pen(at theta: Double) -> CGPoint {
         var x = 0.0, y = 0.0
         for rod in rods {
             let angle = rod.speed * theta + rod.phase
@@ -123,8 +132,15 @@ struct SplashView: View {
         return CGPoint(x: x, y: y)
     }
 
-    private static func ease(_ x: Double) -> Double {
-        let t = min(max(x, 0), 1)
-        return t * t * (3 - 2 * t)
+    /// The origin, then the end of each rod, at angle θ.
+    static func joints(at theta: Double) -> [CGPoint] {
+        var joint = CGPoint.zero
+        var points = [joint]
+        for rod in rods {
+            let angle = rod.speed * theta + rod.phase
+            joint = CGPoint(x: joint.x + rod.length * cos(angle), y: joint.y - rod.length * sin(angle))
+            points.append(joint)
+        }
+        return points
     }
 }

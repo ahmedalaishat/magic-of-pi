@@ -1,14 +1,15 @@
 import SwiftUI
 
 struct ContentView: View {
-    enum Mode: String, CaseIterable {
+    enum Mode: String, CaseIterable, Hashable {
         case chords = "Chords"
         case rods = "Rods"
         case walk = "3D Walk"
         case spring = "3D Spring"
     }
 
-    @AppStorage("mode") private var mode = Mode.chords
+    /// The home screen, then the open visualization (at most one).
+    @State private var path: [Mode] = []
     @State private var chords = PiChordModel()
     @State private var rods = RodsModel()
     @State private var walk = WalkModel()
@@ -21,23 +22,27 @@ struct ContentView: View {
     @State private var tour: Task<Void, Never>?
 
     var body: some View {
-        VStack(spacing: 8) {
-            Picker("Mode", selection: $mode) {
-                ForEach(Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-            }
-            .pickerStyle(.segmented)
-
-            switch mode {
-            case .chords: ChordModeView(model: chords)
-            case .rods: RodsModeView(model: rods)
-            case .walk: WalkModeView(model: walk)
-            case .spring: SpringModeView(model: spring)
-            }
+        NavigationStack(path: $path) {
+            HomeView(onOpen: { path = [$0] }, onTour: startTour, onFindBirthday: { find.isOpen = true })
+                .navigationDestination(for: Mode.self) { mode in
+                    Group {
+                        switch mode {
+                        case .chords: ChordModeView(model: chords)
+                        case .rods: RodsModeView(model: rods)
+                        case .walk: WalkModeView(model: walk)
+                        case .spring: SpringModeView(model: spring)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .background(Color.black.ignoresSafeArea())
+                    .navigationTitle(mode.rawValue)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbarBackground(.black, for: .navigationBar)
+                }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .background(Color.black.ignoresSafeArea())
+        .tint(.white)
         .environment(find)
         .overlay(alignment: .bottom) {
             if let caption = showcase.caption {
@@ -68,12 +73,12 @@ struct ContentView: View {
         }
         .sheet(isPresented: $find.isOpen) {
             FindInPiView { steps in
-                mode = .walk
+                path = [.walk]
                 walk.jump(to: steps)
             }
         }
-        // Only the visible mode animates; the other keeps its drawing but stops.
-        .onChange(of: mode) {
+        // Only the visible mode animates; the others keep their drawings but stop.
+        .onChange(of: path) {
             chords.isPlaying = false
             rods.isPlaying = false
             walk.isPlaying = false
@@ -143,7 +148,7 @@ extension ContentView {
         for (stepMode, step) in steps {
             guard !Task.isCancelled else { return }
             withAnimation { showcase.caption = step.caption }
-            mode = stepMode
+            path = [stepMode]
             // Let the tab switch (which pauses everything) settle before starting the step.
             try? await Task.sleep(for: .milliseconds(400))
             guard !Task.isCancelled else { return }
@@ -154,6 +159,7 @@ extension ContentView {
         withAnimation { showcase.caption = "That's the magic of π: endless, never repeating, and never quite closing." }
         try? await Task.sleep(for: .seconds(4))
         guard !Task.isCancelled else { return }
+        path = []
         endTour()
     }
 }
