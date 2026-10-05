@@ -11,6 +11,9 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
       `python3 tools/make_icon.py PiVisualizer/Assets.xcassets/AppIcon.appiconset/AppIcon.png`).
 - [x] **Name**: "Magic of π".
 
+## Showcase
+- [x] **"Show me the magic" tour**: options → Explore; plays the best moments with captions.
+
 ## Phase 2 — Make it an experience
 - [x] **π music**: each digit plays a note on a pentatonic scale, synced with drawing and haptics;
       close calls play a chord. Mute toggle, respects the silent switch.
@@ -24,24 +27,25 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
 - [x] **Welcome card**: one-time tips after the splash.
 
 ## Phase 3 — Share
-- [ ] **Export video**: record a mode playing (incl. Spotlight / camera moves) to Photos or share sheet.
-- [ ] **Save as wallpaper**: high-resolution still of the current drawing.
+- [x] **Export video**: ⏺ in the control bar records the visualization (cropped, with music) to an MP4;
+      preview with Share and Save to Photos. Follows tab switches, so a whole tour can be recorded.
+- [x] **Save as wallpaper**: options → Save as wallpaper (1290 × 2796).
 
 ## Phase 4 — Reach
-- [ ] **AR**: place the 3D Walk or 3D Spring in the room (RealityKit + ARKit).
-- [ ] **Home-screen widget**: one new chord of π per hour.
-- [ ] **Compare numbers**: run the visuals with e, √2 and φ next to π.
+- [x] **AR**: options → View in AR in 3D Walk and 3D Spring (ARKit + SceneKit).
+- [ ] **Home-screen widget**: one new chord of π per hour. Needs a widget extension target (add via
+      Xcode → New Target → Widget Extension), not hand-edited into the project.
+- [x] **Compare numbers**: Chords and 3D Walk can draw e, √2 or φ (1,000,000 digits each).
 
 ## Production readiness (alongside the phases)
 - [x] **Source control**: git repository with .gitignore.
 - [ ] **Release build**: optimised configuration; profile all modes on device at max speed.
-- [ ] **Privacy manifest** (PrivacyInfo.xcprivacy): no data collected, no tracking.
-- [ ] **Accessibility**: VoiceOver labels on all controls, Reduce Motion (no auto camera moves,
-      static splash), Dynamic Type for text, sufficient contrast.
-- [ ] **iPad**: layouts for larger screens and landscape (the app already builds for iPad).
+- [x] **Privacy manifest** (PrivacyInfo.xcprivacy): no data collected, no tracking; required-reason APIs declared.
+- [x] **Accessibility**: VoiceOver labels and values for controls and visualizations; Reduce Motion
+      (static splash, no automatic camera orbits). Dynamic Type: system fonts throughout.
+- [x] **iPad**: layout scales to iPad (checked on iPad Pro 13-inch). Landscape: still to review.
 - [x] **Persistence**: remembers the last mode and each mode's settings between launches.
-- [ ] **Tests**: unit tests for the maths (π digits, closest approach, near-miss detection,
-      Fourier outline) and UI smoke tests that launch every mode.
+- [x] **Tests**: unit tests for the maths (PiVisualizerTests, Swift Testing). UI smoke tests: to do.
 - [ ] **Swift 6 language mode**: strict concurrency (the code is already close; a few warnings).
 - [ ] **Localisation**: English first; Arabic as a candidate (right-to-left layout check).
 - [ ] **Distribution** (deferred): Apple Developer Program account, TestFlight beta, App Store
