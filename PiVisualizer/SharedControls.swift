@@ -87,6 +87,8 @@ struct OptionsSheet<ModeOptions: View>: View {
     @Binding var speed: Double
     let speedRange: ClosedRange<Double>
     @Binding var hapticsOn: Bool
+    /// Renders the current visualization as a wallpaper.
+    let makeWallpaper: () -> Void
     @ViewBuilder let modeOptions: () -> ModeOptions
     @Environment(FindInPi.self) private var find
     @Environment(\.dismiss) private var dismiss
@@ -104,6 +106,15 @@ struct OptionsSheet<ModeOptions: View>: View {
                     }
                 }
                 .tint(.purple)
+                Section("Share") {
+                    Button {
+                        dismiss()
+                        // Render after the sheet is gone, so the 3D snapshot isn't covered.
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: makeWallpaper)
+                    } label: {
+                        Label("Save as wallpaper", systemImage: "photo")
+                    }
+                }
                 Section("Explore") {
                     Button {
                         dismiss()

@@ -26,7 +26,8 @@ struct RodsModeView: View {
                 .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .rods, speed: $model.speed, speedRange: 0.01...20, hapticsOn: $model.hapticsOn) {
+            OptionsSheet(topic: .rods, speed: $model.speed, speedRange: 0.01...20, hapticsOn: $model.hapticsOn,
+                         makeWallpaper: { Wallpaper.shared.render(RodsDiagram(model: model, zoom: 1)) }) {
                 RodsOptions(model: model)
             }
         }

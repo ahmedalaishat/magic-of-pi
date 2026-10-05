@@ -25,7 +25,8 @@ struct SpringModeView: View {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .spring, speed: $model.speed, speedRange: 0.05...20, hapticsOn: $model.hapticsOn) {
+            OptionsSheet(topic: .spring, speed: $model.speed, speedRange: 0.05...20, hapticsOn: $model.hapticsOn,
+                         makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
                 Section("Turns") {
                     Picker("Turns", selection: Binding(get: { model.turnCount }, set: { model.setTurnCount($0) })) {
                         ForEach(SpringModel.turnOptions, id: \.self) { Text("\($0)").tag($0) }
@@ -90,6 +91,7 @@ struct SpringSceneView: UIViewRepresentable {
         view.preferredFramesPerSecond = 120
         view.rendersContinuously = true
         context.coordinator.attachGestures(to: view)
+        Wallpaper.shared.snapshot3D = { [weak view] in view?.snapshot() }
         // A rebuilt scene (new turn count, or entering full screen) shouldn't replay the last move.
         context.coordinator.skipShot(upTo: shot)
         context.coordinator.update(position: position, isPlaying: isPlaying, shot: shot)

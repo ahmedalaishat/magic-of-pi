@@ -23,7 +23,8 @@ struct ChordModeView: View {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .chords, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn) {
+            OptionsSheet(topic: .chords, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
+                         makeWallpaper: { Wallpaper.shared.render(ChordDiagram(model: model, zoom: 1)) }) {
                 Section("Digits of π") {
                     Picker("Digits", selection: Binding(get: { model.digitCount }, set: { model.setDigitCount($0) })) {
                         ForEach(PiChordModel.countOptions, id: \.self) {

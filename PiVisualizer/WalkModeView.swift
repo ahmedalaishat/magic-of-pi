@@ -22,7 +22,8 @@ struct WalkModeView: View {
             await runFrameLoop(while: { model.isPlaying }, tick: model.tick(seconds:))
         }
         .sheet(isPresented: $showingOptions) {
-            OptionsSheet(topic: .walk, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn) {
+            OptionsSheet(topic: .walk, speed: $model.speed, speedRange: 2...50_000, hapticsOn: $model.hapticsOn,
+                         makeWallpaper: { Wallpaper.shared.renderSnapshot() }) {
                 Section("Digits of π") {
                     Picker("Digits", selection: Binding(get: { model.digitCount }, set: { model.setDigitCount($0) })) {
                         ForEach(WalkModel.countOptions, id: \.self) {
@@ -72,6 +73,7 @@ struct WalkSceneView: UIViewRepresentable {
         // The director camera moves every frame, even while paused.
         view.rendersContinuously = true
         context.coordinator.attachGestures(to: view)
+        Wallpaper.shared.snapshot3D = { [weak view] in view?.snapshot() }
         // A rebuilt scene (new digit count, or entering full screen) shouldn't replay the last move.
         context.coordinator.skipShot(upTo: shot)
         context.coordinator.update(position: position, speed: speed, isPlaying: isPlaying, shot: shot)

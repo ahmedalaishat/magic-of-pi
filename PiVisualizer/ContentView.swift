@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var find = FindInPi()
     @AppStorage("seenWelcome") private var seenWelcome = false
     @Bindable private var recorder = VideoRecorder.shared
+    @Bindable private var wallpaper = Wallpaper.shared
 
     var body: some View {
         VStack(spacing: 8) {
@@ -43,6 +44,7 @@ struct ContentView: View {
             }
         }
         .sheet(item: $recorder.finishedClip) { ClipPreview(url: $0) }
+        .sheet(item: $wallpaper.rendered) { WallpaperPreview(image: $0.image) }
         .alert("Recording failed", isPresented: Binding(get: { recorder.failure != nil },
                                                          set: { if !$0 { recorder.failure = nil } })) {
             Button("OK", role: .cancel) {}
