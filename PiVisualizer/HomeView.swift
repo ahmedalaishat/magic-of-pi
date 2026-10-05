@@ -133,32 +133,44 @@ private struct LivePi: View {
     }
 }
 
-/// π's digits drifting upward, barely visible, behind everything.
+/// π's digits drifting slowly upward behind the hero. Two identical copies are stacked and the
+/// drift wraps by exactly one copy's height, so the loop is seamless and the screen never empties.
 private struct DriftingDigits: View {
     let animating: Bool
     private static let text = PiDigits.all.prefix(2_400).map(String.init).joined()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var copyHeight: CGFloat = 0
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 30, paused: !animating || reduceMotion)) { timeline in
             GeometryReader { geometry in
-                let drift = timeline.date.timeIntervalSinceReferenceDate * 6
-                let span = geometry.size.height * 1.5
-                Text(Self.text)
-                    .font(.system(size: 15, design: .monospaced))
-                    .tracking(3)
-                    .lineSpacing(6)
-                    .foregroundStyle(.white.opacity(0.035))
-                    .frame(width: geometry.size.width + 40)
-                    .offset(x: -20, y: -CGFloat(drift.truncatingRemainder(dividingBy: span)))
+                let drift = CGFloat(timeline.date.timeIntervalSinceReferenceDate * 6)
+                let offset = copyHeight > 0 ? drift.truncatingRemainder(dividingBy: copyHeight) : 0
+                VStack(spacing: 0) {
+                    digits
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { copyHeight = $0 }
+                    digits
+                }
+                .frame(width: geometry.size.width + 40)
+                .offset(x: -20, y: -offset)
             }
             .clipped()
-            // Strongest behind the hero, fading out before the cards and buttons.
-            .mask(LinearGradient(colors: [.white, .white, .clear], startPoint: .top, endPoint: .center))
+            // Clear behind the hero and the card, fading out behind the tiles and buttons.
+            .mask(LinearGradient(stops: [.init(color: .white, location: 0), .init(color: .white, location: 0.5),
+                                         .init(color: .clear, location: 0.8)], startPoint: .top, endPoint: .bottom))
         }
         .ignoresSafeArea()
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+
+    private var digits: some View {
+        Text(Self.text)
+            .font(.system(size: 15, design: .monospaced))
+            .tracking(3)
+            .lineSpacing(6)
+            .foregroundStyle(.white.opacity(0.09))
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -210,8 +222,16 @@ private struct FactCard: View {
             .accessibilityHidden(true)
         }
         .padding(18)
-        .background(Color(white: 0.07), in: RoundedRectangle(cornerRadius: 22))
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(.white.opacity(0.08)))
+        // Raised: a lighter surface, an edge catching light at the top, and a soft violet glow below.
+        .background(
+            LinearGradient(colors: [Color(white: 0.14), Color(white: 0.08)], startPoint: .top, endPoint: .bottom),
+            in: RoundedRectangle(cornerRadius: 22))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22)
+                .strokeBorder(LinearGradient(colors: [.white.opacity(0.22), .white.opacity(0.04)],
+                                             startPoint: .top, endPoint: .bottom), lineWidth: 1))
+        .shadow(color: Color(red: 0.49, green: 0.23, blue: 0.93).opacity(0.35), radius: 22, y: 10)
+        .shadow(color: .black.opacity(0.8), radius: 6, y: 4)
         .gesture(DragGesture(minimumDistance: 20).onEnded { value in
             go(index + (value.translation.width < 0 ? 1 : -1))
         })
