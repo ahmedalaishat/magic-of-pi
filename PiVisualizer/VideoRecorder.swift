@@ -1,4 +1,5 @@
 import AVFoundation
+import os
 import CoreImage
 import Observation
 import ReplayKit
@@ -8,7 +9,8 @@ import SwiftUI
 /// Records the visualization, and nothing else, to an MP4 with the app's sound.
 ///
 /// ReplayKit captures the app's screen and audio; every video frame is cropped to the
-/// visualization's frame (`cropRect`), scaled to at most 1080 px, and written with AVAssetWriter.
+/// visualization's frame (`crop`, kept current as tabs change), fitted into the clip's frame (set by
+/// the first frame, at most 1080 px wide), and written with AVAssetWriter.
 @MainActor
 @Observable
 final class VideoRecorder {
@@ -26,8 +28,9 @@ final class VideoRecorder {
     var failure: String?
     var isRecording: Bool { state == .recording || state == .starting }
 
-    /// The visualization's frame, in screen points. Set by `.recordingArea()`.
-    @ObservationIgnored var cropRect: CGRect = .zero
+    /// The visualization's frame, in screen points. Set by `.recordingArea()`; read per frame on the
+    /// writer's queue, hence the lock.
+    nonisolated static let crop = OSAllocatedUnfairLock(initialState: CGRect.zero)
     @ObservationIgnored private var writer: ClipWriter?
 
     func toggle() {
@@ -46,7 +49,7 @@ final class VideoRecorder {
         }
         recorder.isMicrophoneEnabled = false
         let screen = UIScreen.main
-        let writer = ClipWriter(crop: cropRect, screenSize: screen.bounds.size)
+        let writer = ClipWriter(screenSize: screen.bounds.size)
         self.writer = writer
         state = .starting
         recorder.startCapture(handler: { buffer, type, error in
@@ -86,7 +89,6 @@ final class VideoRecorder {
 /// Writes cropped frames and app audio to an MP4. Used only on its own serial queue.
 private final class ClipWriter: @unchecked Sendable {
     private let queue = DispatchQueue(label: "PiVisualizer.clip-writer")
-    private let crop: CGRect
     private let screenSize: CGSize
     private let url = FileManager.default.temporaryDirectory
         .appendingPathComponent("Magic of π \(Int(Date().timeIntervalSince1970)).mp4")
@@ -100,8 +102,7 @@ private final class ClipWriter: @unchecked Sendable {
     private var started = false
     private var finished = false
 
-    init(crop: CGRect, screenSize: CGSize) {
-        self.crop = crop
+    init(screenSize: CGSize) {
         self.screenSize = screenSize
     }
 
@@ -134,6 +135,7 @@ private final class ClipWriter: @unchecked Sendable {
         let frame = CIImage(cvPixelBuffer: pixels)
 
         // Screen points → captured pixels. Core Image counts y from the bottom.
+        let crop = VideoRecorder.crop.withLock { $0 }
         let scale = frame.extent.width / screenSize.width
         let region = CGRect(x: crop.minX * scale, y: frame.extent.height - crop.maxY * scale,
                             width: crop.width * scale, height: crop.height * scale).integral
@@ -145,11 +147,16 @@ private final class ClipWriter: @unchecked Sendable {
         var output: CVPixelBuffer?
         CVPixelBufferPoolCreatePixelBuffer(nil, pool, &output)
         guard let output else { return }
-        let fit = outputSize.width / region.width
+        // Fit the area into the clip's frame, centred on black: after a tab switch it may have
+        // a different shape from the first.
+        let fit = min(outputSize.width / region.width, outputSize.height / region.height)
         let image = frame.cropped(to: region)
             .transformed(by: CGAffineTransform(translationX: -region.minX, y: -region.minY))
             .transformed(by: CGAffineTransform(scaleX: fit, y: fit))
-        context.render(image, to: output)
+            .transformed(by: CGAffineTransform(translationX: (outputSize.width - region.width * fit) / 2,
+                                               y: (outputSize.height - region.height * fit) / 2))
+        context.render(image.composited(over: CIImage(color: .black).cropped(to: CGRect(origin: .zero, size: outputSize))),
+                       to: output)
         adaptor.append(output, withPresentationTime: time)
     }
 
@@ -200,10 +207,15 @@ extension View {
             GeometryReader { geometry in
                 let frame = geometry.frame(in: .global)
                 Color.clear
-                    .onAppear { VideoRecorder.shared.cropRect = Self.area(frame, square: square) }
-                    .onChange(of: frame) { _, new in VideoRecorder.shared.cropRect = Self.area(new, square: square) }
+                    .onAppear { Self.setCrop(frame, square: square) }
+                    .onChange(of: frame) { _, new in Self.setCrop(new, square: square) }
             }
         )
+    }
+
+    private static func setCrop(_ frame: CGRect, square: Bool) {
+        let area = area(frame, square: square)
+        VideoRecorder.crop.withLock { $0 = area }
     }
 
     private static func area(_ frame: CGRect, square: Bool) -> CGRect {
