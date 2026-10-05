@@ -13,6 +13,7 @@ struct SpringModeView: View {
             scene
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .frame(maxHeight: .infinity)
+                .recordingArea()
                 .overlay(alignment: .topLeading) {
                     CounterBadge { String(format: "%.2f / %d turns", model.position, model.turnCount) }
                 }

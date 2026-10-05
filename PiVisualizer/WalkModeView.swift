@@ -11,6 +11,7 @@ struct WalkModeView: View {
             scene
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .frame(maxHeight: .infinity)
+                .recordingArea()
                 .overlay(alignment: .topLeading) {
                     CounterBadge { "\(model.steps.formatted()) / \(model.digitCount.formatted()) digits" }
                 }

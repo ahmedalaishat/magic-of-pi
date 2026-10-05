@@ -11,6 +11,7 @@ struct ChordModeView: View {
                 ChordDiagram(model: model, zoom: zoom)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .recordingArea(square: true)
             .overlay(alignment: .topLeading) {
                 CounterBadge { "\((model.completed + 1).formatted()) / \(model.digitCount.formatted()) digits" }
             }

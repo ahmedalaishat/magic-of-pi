@@ -12,6 +12,7 @@ struct RodsModeView: View {
                 RodsDiagram(model: model, zoom: zoom)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .recordingArea(square: true)
             .overlay(alignment: .topLeading) { CounterBadge { headerDetail } }
             RodsReadout(model: model, onEditFormula: { editingFormula = true }).infoCard()
             ControlBar(isPlaying: model.isPlaying, onRestart: model.restart,

@@ -15,6 +15,7 @@ struct ContentView: View {
     @State private var spring = SpringModel()
     @State private var find = FindInPi()
     @AppStorage("seenWelcome") private var seenWelcome = false
+    @Bindable private var recorder = VideoRecorder.shared
 
     var body: some View {
         VStack(spacing: 8) {
@@ -41,6 +42,13 @@ struct ContentView: View {
                     .transition(.opacity)
             }
         }
+        .sheet(item: $recorder.finishedClip) { ClipPreview(url: $0) }
+        .alert("Recording failed", isPresented: Binding(get: { recorder.failure != nil },
+                                                         set: { if !$0 { recorder.failure = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(recorder.failure ?? "")
+        }
         .sheet(isPresented: $find.isOpen) {
             FindInPiView { steps in
                 mode = .walk
@@ -49,6 +57,8 @@ struct ContentView: View {
         }
         // Only the visible mode animates; the other keeps its drawing but stops.
         .onChange(of: mode) {
+            // A clip is of one visualization; switching tabs ends it.
+            if recorder.state == .recording { recorder.toggle() }
             chords.isPlaying = false
             rods.isPlaying = false
             walk.isPlaying = false

@@ -41,10 +41,11 @@ struct ControlBar: View {
 
     var body: some View {
         HStack {
-            HStack(spacing: 26) {
+            HStack(spacing: 24) {
                 Button(action: onRestart) { Image(systemName: "arrow.counterclockwise") }
                     .accessibilityLabel("Restart")
                 if !shots.isEmpty { CameraMenu(shots: shots, onShot: onShot) }
+                RecordButton()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Button(action: onTogglePlay) {
@@ -170,7 +171,9 @@ struct CounterBadge: View {
     let text: () -> String
 
     var body: some View {
-        Text(text())
+        // Hidden while recording, so clips show only the visualization.
+        Text(VideoRecorder.shared.isRecording ? "" : text())
+            .opacity(VideoRecorder.shared.isRecording ? 0 : 1)
             .font(.caption.monospacedDigit())
             .foregroundStyle(.white.opacity(0.75))
             .padding(.horizontal, 10)
@@ -188,5 +191,25 @@ extension View {
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+/// Starts and stops a recording of the visualization; shows the elapsed time while recording.
+struct RecordButton: View {
+    private let recorder = VideoRecorder.shared
+
+    var body: some View {
+        Button(action: recorder.toggle) {
+            if recorder.isRecording {
+                HStack(spacing: 4) {
+                    Image(systemName: "stop.circle.fill").foregroundStyle(.red)
+                    RecordingIndicator()
+                }
+            } else {
+                Image(systemName: "record.circle")
+            }
+        }
+        .disabled(recorder.state == .finishing)
+        .accessibilityLabel(recorder.isRecording ? "Stop recording" : "Record a clip")
     }
 }
