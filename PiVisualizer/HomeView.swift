@@ -1,10 +1,9 @@
 import SwiftUI
 
 /// The starting screen: a live π drawn by rods, a "did you know" card, the four visualizations,
-/// and the tour and birthday search.
+/// and the birthday search.
 struct HomeView: View {
     let onOpen: (ContentView.Mode) -> Void
-    let onTour: () -> Void
     let onFindBirthday: () -> Void
     @State private var visible = true
 
@@ -27,23 +26,13 @@ struct HomeView: View {
                 FactCard()
                 modeGrid
                 Spacer(minLength: 0)
-                HStack(spacing: 10) {
-                    Button(action: onTour) {
-                        Label("Show me the magic", systemImage: "sparkles")
-                            .font(.body.weight(.semibold))
-                            .frame(maxWidth: .infinity, minHeight: 52)
-                            .background(Color(red: 0.49, green: 0.23, blue: 0.93), in: Capsule())
-                    }
-                    Button(action: onFindBirthday) {
-                        Label("Find your birthday", systemImage: "magnifyingglass")
-                            .font(.body.weight(.medium))
-                            .frame(maxWidth: .infinity, minHeight: 52)
-                            .overlay(Capsule().stroke(.white.opacity(0.16)))
-                    }
+                Button(action: onFindBirthday) {
+                    Label("Find your birthday in π", systemImage: "magnifyingglass")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 52)
+                        .background(Color(red: 0.49, green: 0.23, blue: 0.93), in: Capsule())
                 }
                 .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 8)

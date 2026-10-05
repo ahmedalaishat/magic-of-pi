@@ -11,9 +11,6 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
       `python3 tools/make_icon.py PiVisualizer/Assets.xcassets/AppIcon.appiconset/AppIcon.png`).
 - [x] **Name**: "Magic of π".
 
-## Showcase
-- [x] **"Show me the magic" tour**: options → Explore; plays the best moments with captions.
-
 ## Phase 2 — Make it an experience
 - [x] **π music**: each digit plays a note on a pentatonic scale, synced with drawing and haptics;
       close calls play a chord. Mute toggle, respects the silent switch.
@@ -28,7 +25,7 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
 
 ## Phase 3 — Share
 - [x] **Export video**: ⏺ in the control bar records the visualization (cropped, with music) to an MP4;
-      preview with Share and Save to Photos. Follows tab switches, so a whole tour can be recorded.
+      preview with Share and Save to Photos.
 - [x] **Save as wallpaper**: options → Save as wallpaper (1290 × 2796).
 
 ## Phase 4 — Reach

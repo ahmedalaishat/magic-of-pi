@@ -118,12 +118,6 @@ struct OptionsSheet<ModeOptions: View>: View {
                 Section("Explore") {
                     Button {
                         dismiss()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { Showcase.shared.requested = true }
-                    } label: {
-                        Label("Show me the magic", systemImage: "sparkles")
-                    }
-                    Button {
-                        dismiss()
                         // Let this sheet finish closing before the search sheet opens.
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { find.isOpen = true }
                     } label: {
