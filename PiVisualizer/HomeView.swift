@@ -188,17 +188,26 @@ private struct FactCard: View {
                     .accessibilityLabel("Next fact")
             }
             .foregroundStyle(.white)
-            VStack(alignment: .leading, spacing: 8) {
-                Text(Self.facts[index].title)
-                    .font(.system(size: 25, design: .serif))
-                Text(Self.facts[index].body)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+            // A paging view: the fact follows the finger and slides; buttons, dots and the timer
+            // slide it too.
+            TabView(selection: $index) {
+                ForEach(Self.facts.indices, id: \.self) { i in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(Self.facts[i].title)
+                            .font(.system(size: 25, design: .serif))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                        Text(Self.facts[i].body)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .tag(i)
+                }
             }
-            .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
-            .id(index)
-            .transition(.opacity)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 96)
             HStack(spacing: 6) {
                 ForEach(Self.facts.indices, id: \.self) { i in
                     Capsule()
@@ -208,6 +217,7 @@ private struct FactCard: View {
                 }
             }
             .frame(maxWidth: .infinity)
+            .animation(.spring(duration: 0.35), value: index)
             .accessibilityHidden(true)
         }
         .padding(18)
@@ -221,9 +231,6 @@ private struct FactCard: View {
                                              startPoint: .top, endPoint: .bottom), lineWidth: 1))
         .shadow(color: Color(red: 0.49, green: 0.23, blue: 0.93).opacity(0.35), radius: 22, y: 10)
         .shadow(color: .black.opacity(0.8), radius: 6, y: 4)
-        .gesture(DragGesture(minimumDistance: 20).onEnded { value in
-            go(index + (value.translation.width < 0 ? 1 : -1))
-        })
         // Advance on its own; any tap or swipe restarts the wait.
         .task(id: index) {
             try? await Task.sleep(for: .seconds(8))
@@ -232,7 +239,7 @@ private struct FactCard: View {
     }
 
     private func go(_ i: Int) {
-        withAnimation(.easeInOut(duration: 0.3)) { index = (i + Self.facts.count) % Self.facts.count }
+        withAnimation(.spring(duration: 0.45)) { index = (i + Self.facts.count) % Self.facts.count }
     }
 }
 
