@@ -45,16 +45,19 @@ final class RodsModel {
     private(set) var rods: [Rod] = RodsModel.makeRods(.classic, count: 2, formula: [])
     /// Editing the formula restarts the drawing with the new rods.
     var formulaRods = RodsModel.formulaPreset {
-        didSet { if style == .formula, formulaRods != oldValue { rebuild() } }
+        didSet {
+            Stored.set(formulaRods.map { [$0.length, $0.multiplier, $0.timesPi ? 1 : 0] }, "rods.formula")
+            if style == .formula, formulaRods != oldValue { rebuild() }
+        }
     }
     /// Angle of a speed-1 rod, in radians.
     private(set) var theta: Double = 0
     var isPlaying = false
     /// Turns per second of a speed-1 rod.
-    var speed: Double = 0.5
-    var hapticsOn = true
+    var speed: Double = Stored.value("rods.speed", default: 0.5) { didSet { Stored.set(speed, "rods.speed") } }
+    var hapticsOn: Bool = Stored.value("rods.haptics", default: true) { didSet { Stored.set(hapticsOn, "rods.haptics") } }
     /// Slow down and zoom in on the start point around each near-miss turn.
-    var spotlightOn = false
+    var spotlightOn: Bool = Stored.value("rods.spotlight", default: false) { didSet { Stored.set(spotlightOn, "rods.spotlight") } }
 
     /// Where the view looks: `zoom` around `center`, in unit coordinates.
     struct Camera {
@@ -98,8 +101,15 @@ final class RodsModel {
     static let trailWidth: CGFloat = 1.1
 
     init() {
-        livePoints = [pen(at: 0)]
-        findNearMisses()
+        // Restore the last style, rod count and formula, then build the rods once.
+        let stored: [[Double]] = Stored.value("rods.formula", default: [])
+        if !stored.isEmpty, stored.allSatisfy({ $0.count == 3 }) {
+            formulaRods = stored.map { FormulaRod(length: $0[0], multiplier: $0[1], timesPi: $0[2] != 0) }
+        }
+        style = Style(rawValue: Stored.value("rods.style", default: Style.classic.rawValue)) ?? .classic
+        rodCount = Stored.value("rods.count", default: 2)
+        if let range = rodCountRange { rodCount = min(max(rodCount, range.lowerBound), range.upperBound) }
+        rebuild()
     }
 
     var rodCountRange: ClosedRange<Int>? {
@@ -251,12 +261,15 @@ final class RodsModel {
         case .formula: 0.25
         case .digits, .drawPi: 0.08
         }
+        Stored.set(newStyle.rawValue, "rods.style")
+        Stored.set(rodCount, "rods.count")
         rebuild()
     }
 
     func setRodCount(_ count: Int) {
         guard count != rodCount else { return }
         rodCount = count
+        Stored.set(count, "rods.count")
         rebuild()
     }
 

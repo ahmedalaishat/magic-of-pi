@@ -74,24 +74,31 @@ struct ShotRequest: Equatable {
 final class WalkModel {
     static let countOptions = [1_000, 10_000, 100_000, 1_000_000]
 
-    private(set) var digitCount = 10_000
+    private(set) var digitCount: Int
     /// Steps taken so far; fractional while playing.
     private(set) var position: Double = 0
     var isPlaying = false
     /// Steps per second.
-    var speed: Double = 300
-    var hapticsOn = true
+    var speed: Double = Stored.value("walk.speed", default: 300) { didSet { Stored.set(speed, "walk.speed") } }
+    var hapticsOn: Bool = Stored.value("walk.haptics", default: true) { didSet { Stored.set(hapticsOn, "walk.haptics") } }
 
     private(set) var shotRequest: ShotRequest?
-    @ObservationIgnored private(set) var path = WalkPath(steps: 10_000)
+    @ObservationIgnored private(set) var path: WalkPath
     @ObservationIgnored private let haptics = DigitHaptics()
 
     var steps: Int { Int(position) }
     var isFinished: Bool { steps >= digitCount }
     var currentDigit: Int { Int(PiDigits.all[max(steps - 1, 0)]) }
 
+    init() {
+        let count = Stored.choice("walk.digits", among: Self.countOptions, default: 10_000)
+        digitCount = count
+        path = WalkPath(steps: count)
+    }
+
     func setDigitCount(_ count: Int) {
         digitCount = count
+        Stored.set(count, "walk.digits")
         path = WalkPath(steps: count)
         restart()
     }

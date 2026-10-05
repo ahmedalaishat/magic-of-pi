@@ -6,13 +6,13 @@ import Observation
 final class PiChordModel {
     static let countOptions = [100, 1_000, 10_000, 100_000, 1_000_000]
 
-    private(set) var digitCount = 1_000
+    private(set) var digitCount = Stored.choice("chords.digits", among: PiChordModel.countOptions, default: 1_000)
     /// Chords drawn so far; the fractional part is how far the newest chord has grown.
     private(set) var position: Double = 0
     var isPlaying = false
     /// Chords per second while playing.
-    var speed: Double = 20
-    var hapticsOn = true
+    var speed: Double = Stored.value("chords.speed", default: 20) { didSet { Stored.set(speed, "chords.speed") } }
+    var hapticsOn: Bool = Stored.value("chords.haptics", default: true) { didSet { Stored.set(hapticsOn, "chords.haptics") } }
 
     /// Finished chords, one path per source digit (in unit-circle coordinates) so the
     /// canvas strokes 10 paths per frame instead of thousands of separate ones.
@@ -64,8 +64,14 @@ final class PiChordModel {
         }
     }
 
+    init() {
+        // A remembered million-digit run needs the high-precision bitmaps from the start.
+        restart()
+    }
+
     func setDigitCount(_ count: Int) {
         digitCount = count
+        Stored.set(count, "chords.digits")
         restart()
     }
 

@@ -56,16 +56,16 @@ struct SpringPath {
 @Observable
 final class SpringModel {
     static let turnOptions = [20, 120, 360]
-    private(set) var turnCount = 120
+    private(set) var turnCount: Int
     /// Turns drawn so far.
     private(set) var position: Double = 0
     var isPlaying = false
     /// Turns per second.
-    var speed: Double = 1
-    var hapticsOn = true
+    var speed: Double = Stored.value("spring.speed", default: 1) { didSet { Stored.set(speed, "spring.speed") } }
+    var hapticsOn: Bool = Stored.value("spring.haptics", default: true) { didSet { Stored.set(hapticsOn, "spring.haptics") } }
     private(set) var shotRequest: ShotRequest?
 
-    @ObservationIgnored private(set) var path = SpringPath(turns: 120)
+    @ObservationIgnored private(set) var path: SpringPath
     @ObservationIgnored private let haptics = DigitHaptics()
 
     var isFinished: Bool { position >= Double(turnCount) }
@@ -75,8 +75,15 @@ final class SpringModel {
         RodsModel.convergents.last { Double($0.turns) <= position + 1e-9 }
     }
 
+    init() {
+        let count = Stored.choice("spring.turns", among: Self.turnOptions, default: 120)
+        turnCount = count
+        path = SpringPath(turns: count)
+    }
+
     func setTurnCount(_ count: Int) {
         turnCount = count
+        Stored.set(count, "spring.turns")
         path = SpringPath(turns: count)
         restart()
     }

@@ -8,7 +8,7 @@ struct ContentView: View {
         case spring = "3D Spring"
     }
 
-    @State private var mode = Mode.chords
+    @AppStorage("mode") private var mode = Mode.chords
     @State private var chords = PiChordModel()
     @State private var rods = RodsModel()
     @State private var walk = WalkModel()
