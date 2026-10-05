@@ -20,6 +20,9 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
       tools/pack_digits.py), tries other ways of writing a date, shows the match in context with honest
       odds, and can walk the 3D Walk to it (matches within 100,000 digits).
 
+## Onboarding
+- [x] **Welcome card**: one-time tips after the splash.
+
 ## Phase 3 — Share
 - [ ] **Export video**: record a mode playing (incl. Spotlight / camera moves) to Photos or share sheet.
 - [ ] **Save as wallpaper**: high-resolution still of the current drawing.
@@ -30,13 +33,13 @@ Goal: a production App Store app that shows the magic of π. Four modes exist to
 - [ ] **Compare numbers**: run the visuals with e, √2 and φ next to π.
 
 ## Production readiness (alongside the phases)
-- [ ] **Source control**: git repository, .gitignore (build/ already ignored).
+- [x] **Source control**: git repository with .gitignore.
 - [ ] **Release build**: optimised configuration; profile all modes on device at max speed.
 - [ ] **Privacy manifest** (PrivacyInfo.xcprivacy): no data collected, no tracking.
 - [ ] **Accessibility**: VoiceOver labels on all controls, Reduce Motion (no auto camera moves,
       static splash), Dynamic Type for text, sufficient contrast.
 - [ ] **iPad**: layouts for larger screens and landscape (the app already builds for iPad).
-- [ ] **Persistence**: remember last mode, settings and speeds between launches.
+- [x] **Persistence**: remembers the last mode and each mode's settings between launches.
 - [ ] **Tests**: unit tests for the maths (π digits, closest approach, near-miss detection,
       Fourier outline) and UI smoke tests that launch every mode.
 - [ ] **Swift 6 language mode**: strict concurrency (the code is already close; a few warnings).
