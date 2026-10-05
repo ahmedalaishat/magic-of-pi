@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var walk = WalkModel()
     @State private var spring = SpringModel()
     @State private var find = FindInPi()
+    @AppStorage("seenWelcome") private var seenWelcome = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -34,6 +35,12 @@ struct ContentView: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .background(Color.black.ignoresSafeArea())
         .environment(find)
+        .overlay {
+            if !seenWelcome {
+                WelcomeCard { withAnimation { seenWelcome = true } }
+                    .transition(.opacity)
+            }
+        }
         .sheet(isPresented: $find.isOpen) {
             FindInPiView { steps in
                 mode = .walk
